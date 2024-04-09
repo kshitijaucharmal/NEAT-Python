@@ -219,9 +219,7 @@ class Genome:
 
         disjoint = (flag + 1) - matching
 
-        if matching == 0:
-            matching = 1
-        avg_weights = total_weights / matching
+        avg_weights = total_weights / (1 if matching == 0 else matching)
 
         N = 1 if highest_inno < 20 else highest_inno
         excess_coeff = self.c1 * excess / N

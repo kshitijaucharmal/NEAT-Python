@@ -8,7 +8,7 @@ for i in range(50):
     pop.append(Genome(gh))
 
 for g in range(len(pop)):
-    for i in range(20):
+    for i in range(100):
         pop[g].mutate()
 
 
