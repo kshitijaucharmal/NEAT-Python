@@ -4,7 +4,6 @@ from neat.species import Species
 
 import random
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Population:
