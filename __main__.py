@@ -8,7 +8,7 @@ for i in range(50):
     pop.append(Genome(gh))
 
 for g in range(len(pop)):
-    for i in range(100):
+    for i in range(20):
         pop[g].mutate()
 
 
@@ -19,3 +19,5 @@ print(g1)
 print(g2)
 
 g1.calculate_compatibility(g2, True)
+print()
+g2.calculate_compatibility(g1, True)

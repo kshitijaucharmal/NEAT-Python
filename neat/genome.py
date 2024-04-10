@@ -1,3 +1,4 @@
+from os import popen
 from neat.node import Node
 from neat.gene import Gene
 
@@ -5,7 +6,7 @@ import random
 
 
 class Genome:
-    def __init__(self, gh, c1=1.0, c2=1.0, c3=0.4):
+    def __init__(self, gh, c1=1.0, c2=1.0, c3=1.0):
         # Ref to history
         self.gh = gh
         # Copying inputs/outputs
@@ -23,7 +24,7 @@ class Genome:
         self.c3 = c3
 
         # Random fitness for now
-        self.fitness = random.uniform(-2, 2)
+        self.fitness = random.uniform(0, 2)
         self.adjusted_fitness = 0
 
         # Input nodes
@@ -193,35 +194,37 @@ class Genome:
         except Exception:
             p2_highest_inno = 0
 
-        # Set highest inno (Should be one with highest fitness)
-        highest_inno = max(p1_highest_inno, p2_highest_inno)
-        lower_inno = min(p1_highest_inno, p2_highest_inno)
+        if self.fitness > partner.fitness:
+            highest_inno = p1_highest_inno
+        else:
+            highest_inno = p2_highest_inno
 
         matching = 0
         disjoint = 0
+        disarr = []
         excess = 0
-
-        flag = 0
 
         total_weights = 0
 
-        for i in range(highest_inno):
+        for i in range(highest_inno + 1):
             e1 = self.exists(i)
             e2 = partner.exists(i)
             if e1 or e2:
-                if i >= lower_inno:
-                    excess += 1
-            if e1 and e2:
-                matching += 1
-                flag = i
-                total_weights += self.get_weight(i) - partner.get_weight(i)
-                continue
+                if e1 and e2:
+                    matching += 1
+                    total_weights += self.get_weight(i) - partner.get_weight(i)
+                    continue
+                disjoint += 1
 
-        disjoint = (flag + 1) - matching
+        avg_weights = abs(total_weights / (1 if matching == 0 else matching))
+        for i in range(highest_inno + 1, max(p1_highest_inno, p2_highest_inno) + 1):
+            e1 = self.exists(i)
+            e2 = partner.exists(i)
+            if e1 or e2:
+                excess += 1
+            pass
 
-        avg_weights = total_weights / (1 if matching == 0 else matching)
-
-        N = 1 if highest_inno < 20 else highest_inno
+        N = 1 if highest_inno < 2000 else highest_inno
         excess_coeff = self.c1 * excess / N
         disjoint_coeff = self.c2 * disjoint / N
         weight_coeff = self.c3 * avg_weights
@@ -232,7 +235,6 @@ class Genome:
         if summary:
             print("Crossover Summary:")
             print("Highest Inno:", highest_inno)
-            print("Flag:", flag)
             print("Matching:", matching)
             print("Avg Weights:", avg_weights)
             print("Disjoint", disjoint)
@@ -277,7 +279,7 @@ class Genome:
 
     # Get Some info
     def get_info(self) -> str:
-        s = "Genome -----------------------\n"
+        s = f"Genome (Fitness: {round(self.fitness, 4)})---------------\n"
         for g in self.genes:
             s += g.get_info()
 
