@@ -1,4 +1,4 @@
-from os import popen
+from os import confstr, popen
 from neat.node import Node
 from neat.gene import Gene
 
@@ -112,7 +112,7 @@ class Genome:
         for i in range(len(self.nodes)):
             if self.nodes[i].number == n:
                 return self.nodes[i]
-        print("Node not found : Something's Wrong")
+        print("Node not found : Something's Wrong ", n)
         return None
 
     # Connect genes to get ready for output calculation
@@ -169,8 +169,21 @@ class Genome:
         return -1
 
     def crossover(self, partner):
+        self.calculate_compatibility(partner, True)
         child = Genome(self.gh)
         child.nodes.clear()
+
+        try:
+            p1_highest_inno = max([(a.inno) for a in self.genes])
+        except Exception:
+            p1_highest_inno = 0
+
+        try:
+            p2_highest_inno = max([(a.inno) for a in partner.genes])
+        except Exception:
+            p2_highest_inno = 0
+
+        # Give the child the maximum nodes of the two
         if self.total_nodes > partner.total_nodes:
             child.total_nodes = self.total_nodes
             for i in range(self.total_nodes):
@@ -180,7 +193,40 @@ class Genome:
             for i in range(partner.total_nodes):
                 child.nodes.append(partner.nodes[i].clone())
 
-        pass
+        highest_inno = (
+            p1_highest_inno if self.fitness > partner.fitness else p2_highest_inno
+        )
+
+        for i in range(highest_inno + 1):
+            e1 = self.exists(i)
+            e2 = partner.exists(i)
+            if e1 or e2:
+                if e1 and e2:
+                    gene = (
+                        self.get_gene(i)
+                        if random.random() < 0.5
+                        else partner.get_gene(i)
+                    )
+                    child.genes.append(gene)
+                    continue
+                if e1:
+                    child.genes.append(self.get_gene(i))
+                if e2:
+                    child.genes.append(partner.get_gene(i))
+
+            pass
+
+        child.connect_genes()
+
+        print(child)
+        return child
+
+    def get_gene(self, inno):
+        for g in self.genes:
+            if g.inno == inno:
+                return g.clone()
+        print("Gene not found")
+        return None
 
     # Compatibility calculation
     def calculate_compatibility(self, partner, summary=False):
@@ -201,7 +247,6 @@ class Genome:
 
         matching = 0
         disjoint = 0
-        disarr = []
         excess = 0
 
         total_weights = 0
@@ -224,7 +269,7 @@ class Genome:
                 excess += 1
             pass
 
-        N = 1 if highest_inno < 2000 else highest_inno
+        N = 1 if highest_inno < 20 else highest_inno
         excess_coeff = self.c1 * excess / N
         disjoint_coeff = self.c2 * disjoint / N
         weight_coeff = self.c3 * avg_weights
@@ -240,6 +285,7 @@ class Genome:
             print("Disjoint", disjoint)
             print("Excess:", excess)
             print("Compatibility Distance", cd)
+            print("---------------------------------------")
 
         # print(matching, disjoint, excess)
         # print("Compatibility Distance", cd)
@@ -283,7 +329,7 @@ class Genome:
         for g in self.genes:
             s += g.get_info()
 
-        s += "------------------------------"
+        s += "---------------------------------------"
         return s
 
     def __str__(self):

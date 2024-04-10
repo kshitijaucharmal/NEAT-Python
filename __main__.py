@@ -8,7 +8,7 @@ for i in range(50):
     pop.append(Genome(gh))
 
 for g in range(len(pop)):
-    for i in range(20):
+    for i in range(30):
         pop[g].mutate()
 
 
@@ -18,6 +18,7 @@ g2 = pop[-1]
 print(g1)
 print(g2)
 
-g1.calculate_compatibility(g2, True)
-print()
-g2.calculate_compatibility(g1, True)
+child1 = g1.crossover(g2)
+child2 = g1.crossover(g2)
+
+print(child1.calculate_compatibility(child2))
