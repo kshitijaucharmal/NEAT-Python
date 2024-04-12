@@ -24,7 +24,7 @@ class Genome:
         self.c3 = c3
 
         # Random fitness for now
-        self.fitness = random.uniform(0, 2)
+        self.fitness = random.uniform(0, 200)
         self.adjusted_fitness = 0
 
         # Input nodes
@@ -217,7 +217,6 @@ class Genome:
 
         child.connect_genes()
 
-        print(child)
         return child
 
     def get_gene(self, inno):
@@ -256,11 +255,13 @@ class Genome:
             if e1 or e2:
                 if e1 and e2:
                     matching += 1
-                    total_weights += self.get_weight(i) - partner.get_weight(i)
+                    total_weights += abs(self.get_weight(i)) + abs(
+                        partner.get_weight(i)
+                    )
                     continue
                 disjoint += 1
 
-        avg_weights = abs(total_weights / (1 if matching == 0 else matching))
+        avg_weights = total_weights / (1 if matching == 0 else matching)
         for i in range(highest_inno + 1, max(p1_highest_inno, p2_highest_inno) + 1):
             e1 = self.exists(i)
             e2 = partner.exists(i)
