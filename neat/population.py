@@ -14,8 +14,8 @@ class Population:
 
         for _ in range(pop_len):
             self.population.append(Genome(self.gh))
-            for _ in range(random.randint(10, 30)):
-                self.population[-1].mutate()
+            # for _ in range(random.randint(10, 30)):
+            #     self.population[-1].mutate()
 
         self.best_index = 0
         self.best = self.population[self.best_index]
@@ -47,6 +47,9 @@ class Population:
                     species_assigned[i] = True
                 pass
             self.species.append(sp)
+
+        # l = [(len(sp.members)) for sp in self.species]
+        # print(l)
         pass
 
     def set_allowed_offspring(self):
@@ -60,27 +63,38 @@ class Population:
 
         self.global_avg = total_fitness / len(self.species)
         for i in range(len(self.species)):
-            self.species[i].allowed_offspring = int(
+            self.species[i].allowed_offspring = round(
                 self.species[i].average_fitness
                 / self.global_avg
                 * len(self.species[i].members)
             )
-            # print("Species", i, "is allowed", self.species[i].allowed_offspring)
+            # print(
+            #     self.species[i].average_fitness,
+            #     self.global_avg,
+            #     len(self.species[i].members),
+            #     self.species[i].allowed_offspring,
+            # )
 
     def reset(self):
         self.speciate()
         self.set_allowed_offspring()
 
         new_pop = []
-        allowed = []
-        for _, sp in enumerate(self.species):
-            allowed.append(sp.allowed_offspring)
+        sp_lens = []
+        for sp in self.species:
+            sp_lens.append(len(sp.members))
             for _ in range(sp.allowed_offspring):
                 new_pop.append(sp.give_offspring())
-        print(len(new_pop), len(self.species), sum(allowed))
 
-        # for i in range(self.pop_len):
-        #     self.population[i] = new_pop[i]
+        print(len(new_pop), sp_lens)
+
+        for i in range(self.pop_len):
+            if i < len(new_pop):
+                self.population[i] = new_pop[i]
+            else:
+                self.population[i] = Genome(self.gh)
+                # for _ in range(random.randint(10, 30)):
+                #     self.population[i].mutate()
         pass
 
     # Heuristic for testing

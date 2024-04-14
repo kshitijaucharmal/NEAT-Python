@@ -6,7 +6,8 @@ class Species:
         self.members = []
         self.members.append(mem)
         self.rep = self.members[0]
-        self.threshold = 4
+        self.max_members = 8
+        self.threshold = 3.5
 
         self.average_fitness = 0
         self.allowed_offspring = 0
@@ -43,8 +44,11 @@ class Species:
         return child
 
     def check(self, brain):
+        done = False
         cd = self.rep.calculate_compatibility(brain)
-        return cd < self.threshold
+        if cd < self.threshold and len(self.members) < self.max_members:
+            done = True
+        return done
 
     def adjust_fitness(self):
         for i in range(len(self.members)):
